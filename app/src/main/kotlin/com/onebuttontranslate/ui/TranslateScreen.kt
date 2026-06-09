@@ -7,6 +7,12 @@ import android.content.ActivityNotFoundException
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import android.content.ClipData
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.ui.platform.LocalContext
 
@@ -92,6 +98,8 @@ fun TranslateScreen(
     }
 
     val context = LocalContext.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
     val sourceLocale = Language.byCode(settings.sourceLang)?.locale ?: "en-US"
 
     val voiceLauncher = rememberLauncherForActivityResult(
@@ -213,12 +221,34 @@ fun TranslateScreen(
                 state.error.orEmpty(),
                 color = MaterialTheme.colorScheme.error,
             )
-            state.result.isNotEmpty() -> SelectionContainer {
-                Text(
-                    state.result,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            state.result.isNotEmpty() -> Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+            ) {
+                SelectionContainer(modifier = Modifier.weight(1f)) {
+                    Text(
+                        state.result,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                            clipboard.setClipEntry(
+                                ClipEntry(ClipData.newPlainText("Translation", state.result)),
+                            )
+                            Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier.size(40.dp),
+                ) {
+                    Icon(
+                        Icons.Filled.ContentCopy,
+                        contentDescription = "Copy translation",
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
             }
         }
     }

@@ -3,6 +3,10 @@
 A minimal Android app for fast, distraction-free translation. No cookie banners,
 no loading pages -- open it, type, tap, read.
 
+<p align="center">
+  <img src="img/demo.gif" alt="One Button Translate demo" width="320">
+</p>
+
 ## What it does (v0.1)
 
 - First launch -> Settings screen (forced until an API key is saved).

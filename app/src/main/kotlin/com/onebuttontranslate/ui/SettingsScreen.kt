@@ -14,6 +14,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +40,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.onebuttontranslate.data.Provider
 import com.onebuttontranslate.data.Settings
+import com.onebuttontranslate.data.Language
 
 /**
  * Popup-friendly settings panel. No Scaffold/TopAppBar (those fill the parent
@@ -129,25 +135,19 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            OutlinedTextField(
-                value = draft.sourceLang,
-                onValueChange = { draft = draft.copy(sourceLang = it.uppercase()) },
-                label = { Text("From") },
-                singleLine = true,
+            LanguageDropdown(
+                label = "From",
+                selectedCode = draft.sourceLang,
+                onSelect = { draft = draft.copy(sourceLang = it) },
                 modifier = Modifier.weight(1f),
             )
-            OutlinedTextField(
-                value = draft.targetLang,
-                onValueChange = { draft = draft.copy(targetLang = it.uppercase()) },
-                label = { Text("To") },
-                singleLine = true,
+            LanguageDropdown(
+                label = "To",
+                selectedCode = draft.targetLang,
+                onSelect = { draft = draft.copy(targetLang = it) },
                 modifier = Modifier.weight(1f),
             )
         }
-        Text(
-            "Use language codes (EN, ES, FR, DE...). DeepL accepts region variants like EN-GB, PT-BR.",
-            style = MaterialTheme.typography.bodySmall,
-        )
 
         Spacer(Modifier.height(4.dp))
 
@@ -156,5 +156,55 @@ fun SettingsScreen(
             enabled = draft.isReady,
             modifier = Modifier.fillMaxWidth(),
         ) { Text("Save") }
+    }
+}
+
+/**
+ * Read-only dropdown showing a language by its display name. The underlying
+ * value emitted via [onSelect] is the 2-letter code (e.g. "EN") so the rest
+ * of the app keeps working unchanged. If the persisted code is unknown the
+ * code itself is shown verbatim -- the user can pick a known one to fix it.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageDropdown(
+    label: String,
+    selectedCode: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = Language.byCode(selectedCode)?.displayName ?: selectedCode
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier,
+    ) {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                .fillMaxWidth(),
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            Language.ALL.forEach { lang ->
+                DropdownMenuItem(
+                    text = { Text(lang.displayName) },
+                    onClick = {
+                        onSelect(lang.code)
+                        expanded = false
+                    },
+                )
+            }
+        }
     }
 }

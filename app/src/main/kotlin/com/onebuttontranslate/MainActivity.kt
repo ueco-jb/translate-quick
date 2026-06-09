@@ -92,6 +92,12 @@ private fun App(repo: SettingsRepository) {
                     }
                 }
             },
+            onSourceLangChange = { code ->
+                scope.launch { repo.update { it.copy(sourceLang = code) } }
+            },
+            onTargetLangChange = { code ->
+                scope.launch { repo.update { it.copy(targetLang = code) } }
+            },
         )
     }
 }

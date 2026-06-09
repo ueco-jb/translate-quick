@@ -1,6 +1,7 @@
 package com.onebuttontranslate.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,7 +16,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -26,8 +31,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
@@ -43,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.onebuttontranslate.data.Settings
+import com.onebuttontranslate.data.Language
 
 /**
  * Popup-style translation UI. Layout, top to bottom:
@@ -58,6 +67,8 @@ fun TranslateScreen(
     settings: Settings,
     onOpenSettings: () -> Unit,
     onSwapLanguages: () -> Unit,
+    onSourceLangChange: (String) -> Unit,
+    onTargetLangChange: (String) -> Unit,
     vm: TranslateViewModel = viewModel(),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
@@ -82,10 +93,9 @@ fun TranslateScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                settings.sourceLang.uppercase(),
-                fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.titleMedium,
+            LanguageDropdownCompact(
+                selectedCode = settings.sourceLang,
+                onSelect = onSourceLangChange,
             )
             Spacer(Modifier.size(8.dp))
             FilledTonalIconButton(
@@ -99,10 +109,9 @@ fun TranslateScreen(
                 )
             }
             Spacer(Modifier.size(8.dp))
-            Text(
-                settings.targetLang.uppercase(),
-                fontWeight = FontWeight.SemiBold,
-                style = MaterialTheme.typography.titleMedium,
+            LanguageDropdownCompact(
+                selectedCode = settings.targetLang,
+                onSelect = onTargetLangChange,
             )
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onOpenSettings, modifier = Modifier.size(48.dp)) {
@@ -149,6 +158,62 @@ fun TranslateScreen(
                     state.result,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Compact tappable language indicator: shows just the 2-letter code (EN, ES,
+ * ...) with a small chevron; tapping opens a short list of all available
+ * languages. Designed to be as fast to use as static text -- one tap to open,
+ * one tap to pick.
+ */
+@Composable
+private fun LanguageDropdownCompact(
+    selectedCode: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable { expanded = true }
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                selectedCode.uppercase(),
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Icon(
+                Icons.Filled.ArrowDropDown,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            Language.ALL.forEach { lang ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            lang.code,
+                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    },
+                    onClick = {
+                        onSelect(lang.code)
+                        expanded = false
+                    },
                 )
             }
         }

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -86,16 +87,25 @@ fun TranslateScreen(
                 fontWeight = FontWeight.SemiBold,
                 style = MaterialTheme.typography.titleMedium,
             )
-            IconButton(onClick = onSwapLanguages, modifier = Modifier.size(36.dp)) {
-                Icon(Icons.Filled.SwapHoriz, contentDescription = "Swap languages")
+            Spacer(Modifier.size(8.dp))
+            FilledTonalIconButton(
+                onClick = onSwapLanguages,
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    Icons.Filled.SwapHoriz,
+                    contentDescription = "Swap languages",
+                    modifier = Modifier.size(28.dp),
+                )
             }
+            Spacer(Modifier.size(8.dp))
             Text(
                 settings.targetLang.uppercase(),
                 fontWeight = FontWeight.SemiBold,
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = onOpenSettings, modifier = Modifier.size(36.dp)) {
+            IconButton(onClick = onOpenSettings, modifier = Modifier.size(48.dp)) {
                 Icon(Icons.Filled.Settings, contentDescription = "Settings")
             }
         }

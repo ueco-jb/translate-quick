@@ -3,6 +3,23 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+      Android 11+ requires explicit package visibility to resolve the speech
+      recognition Intent. Without this, Intent.resolveActivity returns null even
+      when a recognizer service exists (e.g. Google's), and the mic button
+      would always look unavailable.
+    -->
+    <queries>
+        <!-- For SpeechRecognizer.isRecognitionAvailable / createSpeechRecognizer -->
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <!-- For Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).resolveActivity -->
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

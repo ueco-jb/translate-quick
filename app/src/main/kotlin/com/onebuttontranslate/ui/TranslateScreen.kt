@@ -1,5 +1,15 @@
 package com.onebuttontranslate.ui
 
+import android.app.Activity
+import android.content.Intent
+import android.speech.RecognizerIntent
+import android.content.ActivityNotFoundException
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.DropdownMenu
@@ -82,6 +91,46 @@ fun TranslateScreen(
         keyboard?.show()
     }
 
+    val context = LocalContext.current
+    val sourceLocale = Language.byCode(settings.sourceLang)?.locale ?: "en-US"
+
+    val voiceLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val spoken = result.data
+                ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                ?.firstOrNull()
+                .orEmpty()
+            if (spoken.isNotEmpty()) {
+                vm.onInputChange(spoken)
+                // After the recognizer activity returns, refocus the field so
+                // the user can immediately glance, tweak if needed, and Enter.
+                focusRequester.requestFocus()
+                keyboard?.show()
+            }
+        }
+    }
+
+    fun launchVoiceInput() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, sourceLocale)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, sourceLocale)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak in ${settings.sourceLang}")
+        }
+        try {
+            voiceLauncher.launch(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(
+                context,
+                "No speech recognizer found on this device.",
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,6 +163,17 @@ fun TranslateScreen(
                 onSelect = onTargetLangChange,
             )
             Spacer(Modifier.weight(1f))
+            FilledTonalIconButton(
+                onClick = { launchVoiceInput() },
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(
+                    Icons.Filled.Mic,
+                    contentDescription = "Voice input",
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+            Spacer(Modifier.size(4.dp))
             IconButton(onClick = onOpenSettings, modifier = Modifier.size(48.dp)) {
                 Icon(Icons.Filled.Settings, contentDescription = "Settings")
             }
@@ -190,11 +250,6 @@ private fun LanguageDropdownCompact(
                 selectedCode.uppercase(),
                 fontWeight = FontWeight.SemiBold,
                 style = MaterialTheme.typography.titleMedium,
-            )
-            Icon(
-                Icons.Filled.ArrowDropDown,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
             )
         }
         DropdownMenu(

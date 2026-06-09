@@ -18,5 +18,6 @@
         <item name="android:backgroundDimAmount">0.45</item>
         <item name="android:windowMinWidthMajor">94%</item>
         <item name="android:windowMinWidthMinor">94%</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
 </resources>

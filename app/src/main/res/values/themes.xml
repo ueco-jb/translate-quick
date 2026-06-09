@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        The full visual theme is driven by Jetpack Compose. The XML theme only needs
+        to provide a sensible base so the system window (status bar background, splash)
+        looks right before Compose paints.
+    -->
+    <style name="Theme.OneButtonTranslate" parent="android:Theme.Material.NoActionBar" />
+</resources>

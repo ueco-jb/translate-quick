@@ -18,7 +18,7 @@ captures/
 # Local SDK config (per-machine path)
 local.properties
 
-# Keystores — never commit these
+# Keystores -- never commit these
 *.jks
 *.keystore
 

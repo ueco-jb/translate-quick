@@ -26,7 +26,7 @@ data class HttpResponse(val code: Int, val body: String)
 
 /**
  * Real HTTP client using Android's built-in [HttpURLConnection]. Kept dependency-free
- * on purpose — two endpoints don't justify pulling OkHttp.
+ * on purpose -- two endpoints don't justify pulling OkHttp.
  */
 object DefaultHttpClient : HttpClient {
     override suspend fun post(

@@ -96,7 +96,7 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
-                        "Tip: Free-plan keys end in “:fx”. Get one at deepl.com/pro-api.",
+                        "Tip: Free-plan keys end in \":fx\". Get one at deepl.com/pro-api.",
                         style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -143,7 +143,7 @@ fun SettingsScreen(
                 )
             }
             Text(
-                "Use language codes (EN, ES, FR, DE…). DeepL accepts region variants like EN-GB, PT-BR.",
+                "Use language codes (EN, ES, FR, DE...). DeepL accepts region variants like EN-GB, PT-BR.",
                 style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
             )
 
